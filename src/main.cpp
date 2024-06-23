@@ -44,6 +44,68 @@ static GLuint createSingleDotObject()
     return VAO;
 }
 
+static GLuint loadCubeObject() {
+    // Create a cube object
+    float vertices[] = {
+            // front
+            -0.5f, -0.5f, 0.5f,
+            0.5f, -0.5f, 0.5f,
+            0.5f, 0.5f, 0.5f,
+            -0.5f, 0.5f, 0.5f,
+            // back
+            -0.5f, -0.5f, -0.5f,
+            0.5f, -0.5f, -0.5f,
+            0.5f, 0.5f, -0.5f,
+            -0.5f, 0.5f, -0.5f
+    };
+
+    unsigned int indices[] = {
+            // front
+            0, 1, 2,
+            2, 3, 0,
+            // right
+            1, 5, 6,
+            6, 2, 1,
+            // back
+            7, 6, 5,
+            5, 4, 7,
+            // left
+            4, 0, 3,
+            3, 7, 4,
+            // bottom
+            4, 5, 1,
+            1, 0, 4,
+            // top
+            3, 2, 6,
+            6, 7, 3
+    };
+
+    unsigned int VAO;
+    unsigned int VBO;
+    unsigned int EBO;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+
+    // Bind the Vertex Array Object first, then bind and set vertex buffer(s) and attribute pointer(s).
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    // Set the vertex attributes pointers
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+    glEnableVertexAttribArray(0);
+
+    // Unbind the VAO
+    glBindVertexArray(0);
+
+    return VAO;
+}
+
 int main()
 {
     // Initialise GLFW
@@ -88,10 +150,14 @@ int main()
     // Set background color
     glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
 
-    GLuint VAO = createSingleDotObject();
+    // Load a 3D cube object
+    GLuint VAO = loadCubeObject();
 
     // Load shaders
     Shader shader("shaders/vertex/vertex.glsl", "shaders/fragment/fragment.glsl");
+
+    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     // Check if the ESC key was pressed or the window was closed
     while(!glfwWindowShouldClose(window))
@@ -105,8 +171,14 @@ int main()
         // Use the shader. It calls glUseProgram()
         shader.use();
 
+        // update the uniform color
+        double timeValue = glfwGetTime();
+        float greenValue = (float)sin(timeValue) / 2.0f + 0.5f;
+        int vertexColorLocation = glGetUniformLocation(shader.getProgramID(), "cubeColor");
+        glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
+
         glBindVertexArray(VAO); // Bind the VAO
-        glDrawArrays(GL_POINTS, 0, 1);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
         glBindVertexArray(0); // Unbind the VAO
 
         // check and call events and swap the buffers
