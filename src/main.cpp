@@ -173,7 +173,7 @@ int main()
 
         // update the uniform color
         double timeValue = glfwGetTime();
-        float greenValue = (float)sin(timeValue) / 2.0f + 0.5f;
+        float greenValue = ((float)sin(timeValue) / 2.0f) + 0.5f;
         int vertexColorLocation = glGetUniformLocation(shader.getProgramID(), "cubeColor");
         glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
 
