@@ -148,7 +148,7 @@ int main()
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
     // Set background color
-    glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
+    glClearColor(0.0f, 0.0f, 0.6f, 0.0f);
 
     // Load a 3D cube object
     GLuint VAO = loadCubeObject();
@@ -175,9 +175,11 @@ int main()
         double timeValue = glfwGetTime();
         // Dividing by 2.0f scales the result of the sine function to range between -0.5 and 0.5.
         // Adding 0.5f shifts the range of values to be between 0 and 1.
+        float redValue = ((float)sin(timeValue - 10) / 2.0f) + 0.5f;
         float greenValue = ((float)sin(timeValue) / 2.0f) + 0.5f;
+        float blueValue = ((float)sin(timeValue + 10) / 2.0f) + 0.5f;
         int vertexColorLocation = glGetUniformLocation(shader.getProgramID(), "cubeColor");
-        glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
+        glUniform4f(vertexColorLocation, redValue, greenValue, blueValue, 1.0f);
 
         glBindVertexArray(VAO); // Bind the VAO
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
