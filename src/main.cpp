@@ -173,6 +173,8 @@ int main()
 
         // update the uniform color
         double timeValue = glfwGetTime();
+        // Dividing by 2.0f scales the result of the sine function to range between -0.5 and 0.5.
+        // Adding 0.5f shifts the range of values to be between 0 and 1.
         float greenValue = ((float)sin(timeValue) / 2.0f) + 0.5f;
         int vertexColorLocation = glGetUniformLocation(shader.getProgramID(), "cubeColor");
         glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
