@@ -25,6 +25,7 @@ include_directories(
         $ENV{GLAD_INCLUDE_DIRS}
         $ENV{GLFW_INCLUDE_DIRS}
         ${CMAKE_SOURCE_DIR}/include
+        ${PROJECT_SOURCE_DIR}/libs
 )
 
 # Add the executable

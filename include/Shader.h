@@ -7,6 +7,7 @@
 
 #include <string>
 #include <glad/glad.h>
+#include <glm/fwd.hpp>
 
 class Shader {
 public:
@@ -20,6 +21,8 @@ public:
     [[nodiscard]] GLuint getProgramID() const;
 
     [[nodiscard]] bool isCompiled() const;
+
+    void setMat4(const std::string &name, const glm::mat4 &mat) const;
 
 private:
     // Program ID

@@ -8,11 +8,40 @@
 // Include GLFW
 #include <GLFW/glfw3.h>
 #include "Shader.h"
+#include "Camera.h"
+#include <glm/detail/type_mat4x4.hpp>
+#include <glm/ext/matrix_clip_space.hpp>
 
-void processInput(GLFWwindow *window)
+void processInput(GLFWwindow *window, Camera &camera, bool &wireframeMode)
 {
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+
+    // Camera controls
+    if(glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+        camera.moveLeft(0.05f);
+    if(glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+        camera.moveRight(0.05f);
+    if(glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+        camera.moveUp(0.05f);
+    if(glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+        camera.moveDown(0.05f);
+    if(glfwGetKey(window, GLFW_KEY_KP_ADD) == GLFW_PRESS)
+        camera.zoomIn(1.0f);
+    if(glfwGetKey(window, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS)
+        camera.zoomOut(1.0f);
+    if(glfwGetKey(window, GLFW_KEY_HOME) == GLFW_PRESS)
+        camera.reset();
+
+    // Toggle wireframe mode
+    if(glfwGetKey(window, GLFW_KEY_GRAVE_ACCENT) == GLFW_PRESS)
+    {
+        wireframeMode = !wireframeMode;
+        if(wireframeMode)
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        else
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
 }
 
 static GLuint createSingleDotObject()
@@ -122,8 +151,11 @@ int main()
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Required on macOS
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
+    const int WINDOW_WIDTH = 1024;
+    const int WINDOW_HEIGHT = 768;
+
     // Open a window and create its OpenGL context
-    GLFWwindow* window = glfwCreateWindow( 1024, 768, "OpenGL Cube Render", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow( WINDOW_WIDTH, WINDOW_HEIGHT, "OpenGL Cube Render", nullptr, nullptr);
 
     if( window == nullptr ){
         std::cerr << "Failed to open GLFW window. Check your drivers opengl support." << std::endl;
@@ -156,20 +188,28 @@ int main()
     // Load shaders
     Shader shader("shaders/vertex/vertex.glsl", "shaders/fragment/fragment.glsl");
 
-    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    // Create a camera instance
+    Camera camera;
+
+    bool wireframeMode = false;
 
     // Check if the ESC key was pressed or the window was closed
     while(!glfwWindowShouldClose(window))
     {
         // Process user input
-        processInput(window);
+        processInput(window, camera, wireframeMode);
 
         // Render here
         glClear(GL_COLOR_BUFFER_BIT);
 
         // Use the shader. It calls glUseProgram()
         shader.use();
+
+        // Set the view and projection matrices in the shader
+        glm::mat4 view = camera.getViewMatrix();
+        glm::mat4 projection = glm::perspective(glm::radians(camera.zoom), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
+        shader.setMat4("view", view);
+        shader.setMat4("projection", projection);
 
         // update the uniform color
         double timeValue = glfwGetTime();
