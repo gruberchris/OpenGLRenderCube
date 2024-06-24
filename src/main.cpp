@@ -9,7 +9,7 @@
 #include <GLFW/glfw3.h>
 #include "Shader.h"
 #include "Camera.h"
-#include <glm/detail/type_mat4x4.hpp>
+#include <glm/ext/matrix_transform.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
 
 void processInput(GLFWwindow *window, Camera &camera, bool &wireframeMode)
@@ -205,9 +205,16 @@ int main()
         // Use the shader. It calls glUseProgram()
         shader.use();
 
+        // Create the model identity matrix
+        auto model = glm::mat4(1.0f);
+
+        // Apply transformations to the model matrix to rotate it around the y-axis at a rate of 50 degrees per second
+        model = glm::rotate(model, glm::radians((float)glfwGetTime() * 50.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
         // Set the view and projection matrices in the shader
         glm::mat4 view = camera.getViewMatrix();
         glm::mat4 projection = glm::perspective(glm::radians(camera.zoom), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
+        shader.setMat4("model", model);
         shader.setMat4("view", view);
         shader.setMat4("projection", projection);
 
@@ -222,7 +229,7 @@ int main()
         glUniform4f(vertexColorLocation, redValue, greenValue, blueValue, 1.0f);
 
         glBindVertexArray(VAO); // Bind the VAO
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
         glBindVertexArray(0); // Unbind the VAO
 
         // check and call events and swap the buffers
