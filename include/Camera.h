@@ -11,10 +11,8 @@
 
 class Camera {
 public:
-    glm::vec3 position;
-    float zoom;
+    Camera() = default;
 
-    Camera();
     [[nodiscard]] glm::mat4 getViewMatrix() const;
     void moveLeft(float delta);
     void moveRight(float delta);
@@ -23,6 +21,16 @@ public:
     void zoomIn(float delta);
     void zoomOut(float delta);
     void reset();
+    void rotateAroundYAxis(float angle);
+    void rotateAroundXAxis(float angle);
+
+private:
+    glm::vec3 position = glm::vec3(0.0f, 0.0f, 3.0f);
+    float zoom = 45.0f;
+public:
+    float getZoom() const;
+
+    const glm::vec3 &getPosition() const;
 };
 
 #endif //OPENGLRENDERCUBE_CAMERA_H

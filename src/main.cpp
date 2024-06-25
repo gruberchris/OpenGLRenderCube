@@ -18,14 +18,15 @@ void processInput(GLFWwindow *window, Camera &camera, bool &wireframeMode)
         glfwSetWindowShouldClose(window, true);
 
     // Camera controls
+    float cameraSpeed = 0.05f; // adjust the speed as needed
     if(glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-        camera.moveLeft(0.05f);
+        camera.rotateAroundYAxis(cameraSpeed);
     if(glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-        camera.moveRight(0.05f);
+        camera.rotateAroundYAxis(-cameraSpeed);
     if(glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-        camera.moveUp(0.05f);
+        camera.rotateAroundXAxis(cameraSpeed);
     if(glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-        camera.moveDown(0.05f);
+        camera.rotateAroundXAxis(-cameraSpeed);
     if(glfwGetKey(window, GLFW_KEY_KP_ADD) == GLFW_PRESS)
         camera.zoomIn(1.0f);
     if(glfwGetKey(window, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS)
@@ -76,16 +77,15 @@ static GLuint createSingleDotObject()
 static GLuint loadCubeObject() {
     // Create a cube object
     float vertices[] = {
-            // front
-            -0.5f, -0.5f, 0.5f,
-            0.5f, -0.5f, 0.5f,
-            0.5f, 0.5f, 0.5f,
-            -0.5f, 0.5f, 0.5f,
-            // back
-            -0.5f, -0.5f, -0.5f,
-            0.5f, -0.5f, -0.5f,
-            0.5f, 0.5f, -0.5f,
-            -0.5f, 0.5f, -0.5f
+            // positions                                            // colors
+            -0.5f, -0.5f, 0.5f,  0.0f, 1.0f, 0.0f,  // front face is green
+            0.5f, -0.5f, 0.5f,   0.0f, 1.0f, 0.0f,
+            0.5f, 0.5f, 0.5f,    0.0f, 1.0f, 0.0f,
+            -0.5f, 0.5f, 0.5f,   0.0f, 1.0f, 0.0f,
+            -0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,  // back face is red
+            0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+            0.5f, 0.5f, -0.5f,   1.0f, 0.0f, 0.0f,
+            -0.5f, 0.5f, -0.5f,  1.0f, 0.0f, 0.0f
     };
 
     unsigned int indices[] = {
@@ -125,9 +125,13 @@ static GLuint loadCubeObject() {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    // Set the vertex attributes pointers
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+    // Position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), nullptr);
     glEnableVertexAttribArray(0);
+
+    // Color attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     // Unbind the VAO
     glBindVertexArray(0);
@@ -213,7 +217,7 @@ int main()
 
         // Set the view and projection matrices in the shader
         glm::mat4 view = camera.getViewMatrix();
-        glm::mat4 projection = glm::perspective(glm::radians(camera.zoom), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
+        glm::mat4 projection = glm::perspective(glm::radians(camera.getZoom()), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
         shader.setMat4("model", model);
         shader.setMat4("view", view);
         shader.setMat4("projection", projection);
@@ -222,9 +226,9 @@ int main()
         double timeValue = glfwGetTime();
         // Dividing by 2.0f scales the result of the sine function to range between -0.5 and 0.5.
         // Adding 0.5f shifts the range of values to be between 0 and 1.
-        float redValue = ((float)sin(timeValue - 10) / 2.0f) + 0.5f;
-        float greenValue = ((float)sin(timeValue) / 2.0f) + 0.5f;
-        float blueValue = ((float)sin(timeValue + 10) / 2.0f) + 0.5f;
+        float redValue = ((float)sin(timeValue) / 2.0f) + 0.5f;
+        float greenValue = ((float)sin(timeValue + 10) / 2.0f) + 0.5f;
+        float blueValue = 0;
         int vertexColorLocation = glGetUniformLocation(shader.getProgramID(), "cubeColor");
         glUniform4f(vertexColorLocation, redValue, greenValue, blueValue, 1.0f);
 
