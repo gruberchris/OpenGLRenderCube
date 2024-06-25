@@ -28,9 +28,9 @@ private:
     glm::vec3 position = glm::vec3(0.0f, 0.0f, 3.0f);
     float zoom = 45.0f;
 public:
-    float getZoom() const;
+    [[nodiscard]] float getZoom() const;
 
-    const glm::vec3 &getPosition() const;
+    [[nodiscard]] const glm::vec3 &getPosition() const;
 };
 
 #endif //OPENGLRENDERCUBE_CAMERA_H
