@@ -12,40 +12,50 @@
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
 
-void processInput(GLFWwindow *window, Camera &camera, bool &wireframeMode)
-{
-    if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
+void processUserInput(GLFWwindow *window, Camera *camera) {
+    float cameraSpeed = 0.05f;
 
-    // Camera controls
-    float cameraSpeed = 0.05f; // adjust the speed as needed
     if(glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-        camera.rotateAroundYAxis(cameraSpeed);
-    if(glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-        camera.rotateAroundYAxis(-cameraSpeed);
-    if(glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-        camera.rotateAroundXAxis(cameraSpeed);
-    if(glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-        camera.rotateAroundXAxis(-cameraSpeed);
-    if(glfwGetKey(window, GLFW_KEY_KP_ADD) == GLFW_PRESS)
-        camera.zoomIn(1.0f);
-    if(glfwGetKey(window, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS)
-        camera.zoomOut(1.0f);
-    if(glfwGetKey(window, GLFW_KEY_HOME) == GLFW_PRESS)
-        camera.reset();
+        camera->rotateAroundYAxis(cameraSpeed);
+    else if(glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+        camera->rotateAroundYAxis(-cameraSpeed);
+    else if(glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+        camera->rotateAroundXAxis(cameraSpeed);
+    else if(glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+        camera->rotateAroundXAxis(-cameraSpeed);
+    else if(glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+        camera->zoomIn(1.0f);
+    else if(glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+        camera->zoomOut(1.0f);
+    else if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        camera->moveForward(cameraSpeed);
+    else if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        camera->moveBackward(cameraSpeed);
+}
 
-    // Toggle wireframe mode
-    if(glfwGetKey(window, GLFW_KEY_GRAVE_ACCENT) == GLFW_PRESS)
-    {
-        wireframeMode = !wireframeMode;
-        if(wireframeMode)
+struct WindowData {
+    Camera* camera{};
+    bool wireframeMode = false;
+};
+
+void key_callback(GLFWwindow* window, int key, [[maybe_unused]] int scancode, int action, [[maybe_unused]] int mods) {
+    auto *windowData = static_cast<WindowData *>(glfwGetWindowUserPointer(window));
+    auto camera = windowData->camera;
+
+    if (key == GLFW_KEY_HOME && action == GLFW_PRESS) {
+        camera->reset();
+    } else if (key == GLFW_KEY_GRAVE_ACCENT && action == GLFW_PRESS) {
+        windowData->wireframeMode = !windowData->wireframeMode;
+        if(windowData->wireframeMode)
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         else
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    } else if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+        glfwSetWindowShouldClose(window, GLFW_TRUE);
     }
 }
 
-static GLuint createSingleDotObject()
+[[maybe_unused]] static GLuint createSingleDotObject()
 {
     // Create a single dot object
     float vertices[] = {
@@ -77,7 +87,7 @@ static GLuint createSingleDotObject()
 static GLuint loadCubeObject() {
     // Create a cube object
     float vertices[] = {
-            // positions                                            // colors
+            // positions                        // colors
             -0.5f, -0.5f, 0.5f,  0.0f, 1.0f, 0.0f,  // front face is green
             0.5f, -0.5f, 0.5f,   0.0f, 1.0f, 0.0f,
             0.5f, 0.5f, 0.5f,    0.0f, 1.0f, 0.0f,
@@ -169,6 +179,7 @@ int main()
     }
 
     glfwMakeContextCurrent(window);
+    glfwSetKeyCallback(window, key_callback);
 
     // Initialize GLAD
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -197,11 +208,12 @@ int main()
 
     bool wireframeMode = false;
 
+    glfwSetWindowUserPointer(window, new WindowData{&camera, wireframeMode});
+
     // Check if the ESC key was pressed or the window was closed
     while(!glfwWindowShouldClose(window))
     {
-        // Process user input
-        processInput(window, camera, wireframeMode);
+        processUserInput(window, &camera);
 
         // Render here
         glClear(GL_COLOR_BUFFER_BIT);
@@ -242,6 +254,7 @@ int main()
     }
 
     // Close OpenGL window and terminate GLFW
+    glfwDestroyWindow(window);
     glfwTerminate();
 
     return 0;

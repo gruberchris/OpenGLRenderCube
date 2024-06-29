@@ -9,20 +9,14 @@ glm::mat4 Camera::getViewMatrix() const {
     return glm::lookAt(position, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 }
 
-void Camera::moveLeft(float delta) {
-    position.x -= delta;
+void Camera::moveForward(float delta) {
+    glm::vec3 forward = glm::normalize(glm::vec3(0.0f, 0.0f, 0.0f) - position);
+    position += forward * delta;
 }
 
-void Camera::moveRight(float delta) {
-    position.x += delta;
-}
-
-void Camera::moveUp(float delta) {
-    position.y += delta;
-}
-
-void Camera::moveDown(float delta) {
-    position.y -= delta;
+void Camera::moveBackward(float delta) {
+    glm::vec3 backward = glm::normalize(position - glm::vec3(0.0f, 0.0f, 0.0f));
+    position += backward * delta;
 }
 
 void Camera::zoomIn(float delta) {
