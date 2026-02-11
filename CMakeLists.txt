@@ -4,46 +4,37 @@ cmake_minimum_required(VERSION 3.28)
 project(OpenGLRenderCube LANGUAGES CXX C)
 
 # Set C++ standard
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Get environment variables
-set(GLFW_INCLUDE_DIRS $ENV{GLFW_INCLUDE_DIRS})
-set(GLAD_INCLUDE_DIRS $ENV{GLAD_INCLUDE_DIRS})
-set(GLFW_LIBRARIES $ENV{GLFW_LIBRARIES})
-
-# Print environment variables for debugging
-message(STATUS "GLFW_INCLUDE_DIRS = ${GLFW_INCLUDE_DIRS}")
-message(STATUS "GLAD_INCLUDE_DIRS = ${GLAD_INCLUDE_DIRS}")
-message(STATUS "GLFW_LIBRARIES = ${GLFW_LIBRARIES}")
+# Add GLFW from source
+add_subdirectory(${PROJECT_SOURCE_DIR}/libs/glfw)
 
 # Collect all source files in src directory
-file(GLOB SOURCE_FILES "src/*.cpp" "src/glad.c")
-
-# Include directories from environment variables
-include_directories(
-        $ENV{GLAD_INCLUDE_DIRS}
-        $ENV{GLFW_INCLUDE_DIRS}
-        ${CMAKE_SOURCE_DIR}/include
-        ${PROJECT_SOURCE_DIR}/libs
+file(GLOB SOURCE_FILES
+    "src/*.cpp"
+    "libs/glad/src/glad.c"
 )
 
 # Add the executable
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
-# Link GLFW library from environment variable
-target_link_libraries(${PROJECT_NAME}
-        $ENV{GLFW_LIBRARIES}/libglfw.3.dylib
-        "-framework OpenGL"
-        "-framework Cocoa"
-        "-framework IOKit"
-        "-framework CoreVideo"
+# Include directories
+target_include_directories(${PROJECT_NAME} PRIVATE
+        ${CMAKE_SOURCE_DIR}/include
+        ${PROJECT_SOURCE_DIR}/libs
+        ${PROJECT_SOURCE_DIR}/libs/glfw/include
+        ${PROJECT_SOURCE_DIR}/libs/glad/include
 )
+
+# Link libraries
+target_link_libraries(${PROJECT_NAME} PRIVATE glfw)
 
 # Set compiler flags for macOS ARM64
 if(APPLE AND CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -arch arm64")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -arch arm64")
+    # On modern macOS, system frameworks are found automatically when linking with glfw
 endif()
 
 # Copy the shaders directory to the output directory
