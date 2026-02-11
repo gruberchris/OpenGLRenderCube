@@ -16,11 +16,12 @@ The camera in this demo is locked to look at the cube's center. This prevents th
 | `Right Arrow` | Rotate the cube towards the right |
 | `Q`           | Zoom camera view in               |
 | `E`           | Zoom camera view out              |
-| `HOME`        | Reset camera's view to default    |
-| `Esc`         | Close the window                  |
 | `W`           | Move the camera forward           |
 | `S`           | Move the camera backward          |
+| `P`           | Toggle pause cube rotation        |
+| `HOME`        | Reset camera's view to default    |
 | `` ` ``       | Toggle wireframe mode             |
+| `Esc`         | Close the window                  |
 
 ## Third Party OpenGL Dependencies Used
 

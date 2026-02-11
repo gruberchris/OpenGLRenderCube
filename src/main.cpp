@@ -36,6 +36,8 @@ void processUserInput(GLFWwindow *window, Camera *camera) {
 struct WindowData {
     Camera* camera{};
     bool wireframeMode = false;
+    bool rotationPaused = false;
+    float pausedTime = 0.0f;
 };
 
 void key_callback(GLFWwindow* window, int key, [[maybe_unused]] int scancode, int action, [[maybe_unused]] int mods) {
@@ -50,6 +52,11 @@ void key_callback(GLFWwindow* window, int key, [[maybe_unused]] int scancode, in
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         else
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    } else if (key == GLFW_KEY_P && action == GLFW_PRESS) {
+        windowData->rotationPaused = !windowData->rotationPaused;
+        if (windowData->rotationPaused) {
+            windowData->pausedTime = (float)glfwGetTime();
+        }
     } else if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, GLFW_TRUE);
     }
@@ -208,7 +215,8 @@ int main()
 
     bool wireframeMode = false;
 
-    glfwSetWindowUserPointer(window, new WindowData{&camera, wireframeMode});
+    auto *windowData = new WindowData{&camera, wireframeMode, false, 0.0f};
+    glfwSetWindowUserPointer(window, windowData);
 
     // Check if the ESC key was pressed or the window was closed
     while(!glfwWindowShouldClose(window))
@@ -225,7 +233,8 @@ int main()
         auto model = glm::mat4(1.0f);
 
         // Apply transformations to the model matrix to rotate it around the y-axis at a rate of 50 degrees per second
-        model = glm::rotate(model, glm::radians((float)glfwGetTime() * 50.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        float rotationTime = windowData->rotationPaused ? windowData->pausedTime : (float)glfwGetTime();
+        model = glm::rotate(model, glm::radians(rotationTime * 50.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
         // Set the view and projection matrices in the shader
         glm::mat4 view = camera.getViewMatrix();
